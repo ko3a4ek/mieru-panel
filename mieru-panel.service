@@ -1,0 +1,23 @@
+[Unit]
+Description=Mieru Web Panel
+After=network.target mita.service
+Wants=mita.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/mieru-panel
+Environment="PATH=/opt/mieru-panel/venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/opt/mieru-panel/venv/bin/python app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

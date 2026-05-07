@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Mieru Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-800 border-r border-gray-700">
+            <div class="p-6">
+                <h1 class="text-xl font-bold text-white">Mieru Panel</h1>
+                <p class="text-gray-400 text-sm mt-1">Proxy Server Management</p>
+            </div>
+
+            <nav class="mt-6">
+                <a href="{{ url_for('dashboard') }}" class="flex items-center px-6 py-3 bg-gray-700 text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('users') }}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    Users
+                </a>
+                <a href="{{ url_for('config') }}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Configuration
+                </a>
+                <a href="{{ url_for('logs') }}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Logs
+                </a>
+            </nav>
+
+            <div class="absolute bottom-0 w-64 p-6 border-t border-gray-700">
+                <a href="{{ url_for('logout') }}" class="flex items-center text-gray-300 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold">Dashboard</h2>
+                <p class="text-gray-400">Server overview and statistics</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-4 p-3 rounded {% if category == 'error' %}bg-red-500 text-white{% else %}bg-green-500 text-white{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Status Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Server Status -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-400 text-sm font-medium">Server Status</h3>
+                        <span class="w-3 h-3 rounded-full {% if status.running %}bg-green-500{% else %}bg-red-500{% endif %}"></span>
+                    </div>
+                    <p class="text-2xl font-bold {% if status.running %}text-green-400{% else %}text-red-400{% endif %}">
+                        {% if status.running %}RUNNING{% else %}IDLE{% endif %}
+                    </p>
+                    <p class="text-gray-500 text-sm mt-1">{{ status.message }}</p>
+                </div>
+
+                <!-- Total Traffic -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-400 text-sm font-medium">Total Traffic</h3>
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{{ format_bytes(metrics.total_bytes) }}</p>
+                    <p class="text-gray-500 text-sm mt-1">Download: {{ format_bytes(metrics.download_bytes) }}</p>
+                </div>
+
+                <!-- CPU Usage -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-400 text-sm font-medium">CPU Usage</h3>
+                        <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{{ system_info.cpu_percent }}%</p>
+                    <p class="text-gray-500 text-sm mt-1">Processor load</p>
+                </div>
+
+                <!-- RAM Usage -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-400 text-sm font-medium">RAM Usage</h3>
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{{ system_info.ram_percent }}%</p>
+                    <p class="text-gray-500 text-sm mt-1">{{ format_bytes(system_info.ram_used) }} / {{ format_bytes(system_info.ram_total) }}</p>
+                </div>
+            </div>
+
+            <!-- Traffic Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-gray-400 text-sm font-medium mb-2">Today</h3>
+                    <p class="text-xl font-bold text-white">{{ format_bytes(traffic_day.total_bytes) }}</p>
+                    <p class="text-gray-500 text-sm">{{ traffic_day.record_count }} records</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-gray-400 text-sm font-medium mb-2">This Week</h3>
+                    <p class="text-xl font-bold text-white">{{ format_bytes(traffic_week.total_bytes) }}</p>
+                    <p class="text-gray-500 text-sm">{{ traffic_week.record_count }} records</p>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-gray-400 text-sm font-medium mb-2">This Month</h3>
+                    <p class="text-xl font-bold text-white">{{ format_bytes(traffic_month.total_bytes) }}</p>
+                    <p class="text-gray-500 text-sm">{{ traffic_month.record_count }} records</p>
+                </div>
+            </div>
+
+            <!-- Traffic Chart -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+                <h3 class="text-lg font-semibold mb-4">Traffic History (24 Hours)</h3>
+                <canvas id="trafficChart" height="100"></canvas>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+                {% if recent_activity %}
+                    <div class="space-y-3">
+                        {% for activity in recent_activity %}
+                            <div class="flex items-center justify-between py-2 border-b border-gray-700 last:border-0">
+                                <div>
+                                    <p class="text-white font-medium">{{ activity.action }}</p>
+                                    <p class="text-gray-500 text-sm">{{ activity.details or 'No details' }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-gray-400 text-sm">{{ activity.admin_user or 'System' }}</p>
+                                    <p class="text-gray-500 text-xs">{{ activity.timestamp }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500">No recent activity</p>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Load traffic chart
+        async function loadTrafficChart() {
+            try {
+                const response = await fetch('/api/traffic-history?hours=24');
+                const data = await response.json();
+
+                const labels = data.map(d => {
+                    const date = new Date(d.timestamp);
+                    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                });
+                const downloadData = data.map(d => d.download_bytes / 1024 / 1024); // Convert to MB
+                const uploadData = data.map(d => d.upload_bytes / 1024 / 1024); // Convert to MB
+
+                const ctx = document.getElementById('trafficChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Download (MB)',
+                                data: downloadData,
+                                borderColor: 'rgb(59, 130, 246)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Upload (MB)',
+                                data: uploadData,
+                                borderColor: 'rgb(16, 185, 129)',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#9CA3AF'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#9CA3AF'
+                                },
+                                grid: {
+                                    color: '#374151'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#9CA3AF'
+                                },
+                                grid: {
+                                    color: '#374151'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load traffic chart:', error);
+            }
+        }
+
+        // Auto-refresh dashboard
+        async function refreshDashboard() {
+            try {
+                const statusResponse = await fetch('/api/status');
+                const status = await statusResponse.json();
+
+                const metricsResponse = await fetch('/api/metrics');
+                const metrics = await metricsResponse.json();
+
+                const systemResponse = await fetch('/api/system');
+                const system = await systemResponse.json();
+
+                // Update UI elements here if needed
+            } catch (error) {
+                console.error('Failed to refresh dashboard:', error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTrafficChart();
+            setInterval(refreshDashboard, 30000); // Refresh every 30 seconds
+        });
+    </script>
+</body>
+</html>
